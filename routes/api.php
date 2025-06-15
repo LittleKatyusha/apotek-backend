@@ -2,42 +2,66 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Import semua controller yang digunakan
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ObatController;
-// ... import lainnya
-use App\Http\Controllers\Api\OrderController; 
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ConsultationController;
-// 1. Pastikan kita mengimpor AdminObatController dengan benar
-use App\Http\Controllers\Api\Admin\ObatController as AdminObatController; 
+use App\Http\Controllers\Api\Admin\ObatController as AdminObatController;
 use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Api\Admin\DashboardController;
 
-// Rute Publik
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+| Di sini kita mendaftarkan semua "alamat" untuk API kita.
+*/
+
+// == RUTE PUBLIK ==
+// Rute ini bisa diakses siapa saja tanpa perlu login.
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/obat', [ObatController::class, 'index']);
 Route::get('/obat/{id}', [ObatController::class, 'show']);
 
-// Rute yang Membutuhkan Otentikasi
+
+// == RUTE TERPROTEKSI UNTUK PENGGUNA YANG LOGIN ==
+// Semua rute di dalam grup ini memerlukan token otentikasi (login).
 Route::middleware('auth:sanctum')->group(function () {
+    
+    // Mengambil data user yang sedang login
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
     
-    // Rute Pesanan & Konsultasi
+    // Rute untuk Alur Pesanan Pengguna
     Route::post('/checkout', [OrderController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
+    
+    // Rute untuk Fitur Konsultasi
     Route::post('/consultations', [ConsultationController::class, 'store']);
     Route::get('/consultations/{consultation}/messages', [ConsultationController::class, 'fetchMessages']);
     Route::post('/consultations/{consultation}/messages', [ConsultationController::class, 'sendMessage']);
 
-    // Grup Rute Khusus Admin
+
+    // == GRUP RUTE KHUSUS ADMIN ==
+    // Rute ini hanya bisa diakses oleh user yang login DAN memiliki role 'admin'.
     Route::prefix('admin')->middleware('auth.admin')->group(function () {
-        // 2. Pastikan kita menggunakan alias yang benar di sini
+        
+        // Rute Statistik Dasbor
+        Route::get('dashboard-stats', [DashboardController::class, 'getStats']);
+        
+        // Rute CRUD Produk oleh Admin
         Route::apiResource('produk', AdminObatController::class);
-        Route::get('pesanan', [AdminOrderController::class, 'index']); // GET /api/admin/pesanan
-        Route::get('pesanan/{order}', [AdminOrderController::class, 'show']); // GET /api/admin/pesanan/{id}
+        
+        // Rute Manajemen Pesanan oleh Admin
+        Route::get('pesanan', [AdminOrderController::class, 'index']);
+        Route::get('pesanan/{order}', [AdminOrderController::class, 'show']);
         Route::delete('pesanan/{order}', [AdminOrderController::class, 'destroy']);
-        Route::put('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus']); 
+        Route::put('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus']);
+
     });
 });
