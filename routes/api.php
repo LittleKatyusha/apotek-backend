@@ -6,8 +6,10 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ObatController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ConsultationController;
+// 1. Pastikan kita mengimpor AdminObatController dengan benar
+use App\Http\Controllers\Api\Admin\ObatController as AdminObatController; 
 
-// Rute Publik (tidak butuh login)
+// Rute Publik
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/obat', [ObatController::class, 'index']);
@@ -18,14 +20,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-
-    // Rute Pesanan
+    
+    // Rute Pesanan & Konsultasi
     Route::post('/checkout', [OrderController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
-
-    // Rute Konsultasi
     Route::post('/consultations', [ConsultationController::class, 'store']);
     Route::get('/consultations/{consultation}/messages', [ConsultationController::class, 'fetchMessages']);
     Route::post('/consultations/{consultation}/messages', [ConsultationController::class, 'sendMessage']);
+
+    // Grup Rute Khusus Admin
+    Route::prefix('admin')->middleware('auth.admin')->group(function () {
+        // 2. Pastikan kita menggunakan alias yang benar di sini
+        Route::apiResource('produk', AdminObatController::class);
+    });
 });
