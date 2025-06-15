@@ -4,7 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ObatController;
-use App\Http\Controllers\Api\OrderController;
+// ... import lainnya
+use App\Http\Controllers\Api\OrderController; 
 use App\Http\Controllers\Api\ConsultationController;
 // 1. Pastikan kita mengimpor AdminObatController dengan benar
 use App\Http\Controllers\Api\Admin\ObatController as AdminObatController; 
@@ -37,5 +38,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('pesanan', [AdminOrderController::class, 'index']); // GET /api/admin/pesanan
         Route::get('pesanan/{order}', [AdminOrderController::class, 'show']); // GET /api/admin/pesanan/{id}
         Route::delete('pesanan/{order}', [AdminOrderController::class, 'destroy']);
+        Route::put('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus']); 
     });
 });

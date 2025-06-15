@@ -9,13 +9,17 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     /**
-     * Menampilkan daftar semua pesanan untuk admin.
+     * Menampilkan daftar semua pesanan untuk admin dengan pagination.
      */
     public function index()
     {
-        $orders = Order::with('user:id,name')
+        // PERBAIKAN: Ganti .get() menjadi .paginate()
+        // Ini akan secara otomatis membagi hasil menjadi halaman-halaman
+        // dan mengembalikan objek JSON yang sesuai dengan yang diharapkan frontend.
+        $orders = Order::with('user') // Mengambil data user yang berelasi
                         ->orderBy('created_at', 'desc')
-                        ->get();
+                        ->paginate(15); // Mengambil 15 pesanan per halaman
+
         return response()->json($orders);
     }
 
@@ -24,7 +28,6 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        // Muat semua relasi yang diperlukan untuk halaman detail
         $order->load('user', 'items.obat');
         return response()->json($order);
     }
@@ -34,9 +37,25 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        // Menghapus order akan otomatis menghapus order_items
-        // karena kita menggunakan onDelete('cascade') di migration.
         $order->delete();
-        return response()->json(null, 204); // 204 No Content
+        return response()->json(null, 204);
+    }
+    
+    /**
+     * Memperbarui status pesanan.
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
+        $request->validate([
+            'status' => 'required|string|in:Menunggu Pembayaran,Diproses,Dikirim,Selesai,Dibatalkan',
+        ]);
+
+        $order->status = $request->status;
+        $order->save();
+
+        return response()->json([
+            'message' => 'Status pesanan berhasil diperbarui!',
+            'order' => $order,
+        ]);
     }
 }
