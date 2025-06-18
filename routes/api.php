@@ -25,6 +25,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/obat', [ObatController::class, 'index']);
 Route::get('/obat/{id}', [ObatController::class, 'show']);
+Route::get('/produk/terlaris', [ObatController::class, 'bestsellers']);
 
 
 // == RUTE TERPROTEKSI UNTUK PENGGUNA YANG LOGIN ==
@@ -45,14 +46,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/consultations', [ConsultationController::class, 'store']);
     Route::get('/consultations/{consultation}/messages', [ConsultationController::class, 'fetchMessages']);
     Route::post('/consultations/{consultation}/messages', [ConsultationController::class, 'sendMessage']);
-
+    // Rute baru untuk konfirmasi pembayaran
+    Route::post('/orders/{order}/confirm-payment', [OrderController::class, 'confirmPayment']);
 
     // == GRUP RUTE KHUSUS ADMIN ==
     // Rute ini hanya bisa diakses oleh user yang login DAN memiliki role 'admin'.
     Route::prefix('admin')->middleware('auth.admin')->group(function () {
         
         // Rute Statistik Dasbor
-        Route::get('dashboard-stats', [DashboardController::class, 'getStats']);
+        Route::get('/dashboard-stats', [DashboardController::class, 'dashboardStats']);
+
         
         // Rute CRUD Produk oleh Admin
         Route::apiResource('produk', AdminObatController::class);

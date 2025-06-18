@@ -14,13 +14,14 @@ class Order extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'user_id',
-        'nama_penerima',
-        'alamat_pengiriman',
-        'telepon',
-        'total_harga',
-        'status',
+   protected $fillable = [
+    'user_id',
+    'nama_penerima',
+    'alamat_pengiriman',
+    'telepon',
+    'total_harga', // ini akan menjadi subtotal
+    'ongkir',
+    'status',
     ];
 
     /**

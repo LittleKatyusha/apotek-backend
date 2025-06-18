@@ -8,26 +8,26 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
+        channels: __DIR__.'/../routes/channels.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
         
-        // Mendaftarkan alias 'auth.admin' ke class IsAdmin.
-        // Ini adalah langkah yang memperbaiki error "Target class does not exist".
-        $middleware->alias([
-            'auth.admin' => \App\Http\Middleware\IsAdmin::class,
+        // Daftarkan HandleCors sebagai middleware global.
+        // Ini akan berlaku untuk SEMUA rute, termasuk /broadcasting/auth.
+        $middleware->use([
+            \Illuminate\Http\Middleware\HandleCors::class,
         ]);
 
-        // Memastikan middleware CORS berjalan untuk semua rute API.
-        $middleware->api(prepend: [
-             \Illuminate\Http\Middleware\HandleCors::class,
+        // Tetap daftarkan alias untuk penjaga admin.
+        $middleware->alias([
+            'auth.admin' => \App\Http\Middleware\IsAdmin::class,
         ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
         
-        // Menangani error jika pengguna belum terotentikasi saat mengakses API.
         $exceptions->render(function (Illuminate\Auth\AuthenticationException $e, Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
