@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://romanesco.it.com/'],
+    'allowed_origins' => ['https://romanesco.it.com', 'http://localhost:5173'],
 
     'allowed_origins_patterns' => ['/^https:\/\/romanesco\.it\.com(\/.*)?$/'],
 
